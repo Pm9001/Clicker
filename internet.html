@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Доступ в Интернет</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+
+        .form-control:focus {
+            border-color: #000000;
+            box-shadow: none;
+            outline: 0;
+        }
+
+        .btn-dark {
+            background-color: #000000;
+            color: white;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .btn-dark:hover {
+            background-color: #282828;
+            color: white;
+        }
+
+        .btn-dark:active {
+            background-color: #3f3f3f;
+            border-color: #3f3f3f;
+            color: white;
+        }
+
+        .form-control {
+            border-color: #000000;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 15px 1px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h3 class="mb-3 text-center">доступ в интернет</h3>
+    <form method="POST">
+        <div class="form-group">
+            <input class="form-control" id="login" maxlength="20" name="login" placeholder="логин" required type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" id="password" maxlength="20" name="password" placeholder="пароль" required type="password">
+        </div>
+        <div class="form-group text-center">
+            <button class="btn btn-dark" type="submit">
+                отправить
+            </button>
+        </div>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+</body>
+</html>

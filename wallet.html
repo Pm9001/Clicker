@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <style>
+        @font-face {
+            font-family: AireExterior;
+            src: url('static/fonts/AireExterior.ttf');
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-size: 100px;
+        }
+
+        div {
+            position: fixed;
+            width: 50%;
+            height: 50%
+        }
+
+        #squad_1 {
+            top: 0;
+            left: 0;
+            background: #4542ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #squad_2 {
+            top: 0;
+            left: 50%;
+            background: #eff21f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #squad_3 {
+            top: 50%;
+            left: 0;
+            background: #eb3636;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #squad_4 {
+            top: 50%;
+            left: 50%;
+            background: #3eba32;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vympel {
+            font-family: "AireExterior", sans-serif;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            color: #000000;
+        }
+    </style>
+    <script>
+        // Обработчик клика на div
+        $(document).ready(function () {
+            $("#squad_1").click(function () {
+                // Переход на другую страницу
+                window.location.href = 'http://' + document.domain + ':' + location.port + '/wallet/1';
+            });
+
+            $("#squad_2").click(function () {
+                // Переход на другую страницу
+                window.location.href = 'http://' + document.domain + ':' + location.port + '/wallet/2';
+            });
+
+            $("#squad_3").click(function () {
+                // Переход на другую страницу
+                window.location.href = 'http://' + document.domain + ':' + location.port + '/wallet/3';
+            });
+
+            $("#squad_4").click(function () {
+                // Переход на другую страницу
+                window.location.href = 'http://' + document.domain + ':' + location.port + '/wallet/4';
+            });
+        });
+    </script>
+</head>
+<body>
+
+<div id="squad_1" class="vympel">загрузка...</div>
+<div id="squad_2" class="vympel">загрузка...</div>
+<div id="squad_3" class="vympel">загрузка...</div>
+<div id="squad_4" class="vympel">загрузка...</div>
+{#<div id="squad_5"></div>#}
+
+</body>
+</html>

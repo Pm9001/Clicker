@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>библиотека</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <style>
+        .container {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .custom-radio-label {
+            border: 1px solid black;
+            padding: 15px;
+            display: block;
+            text-align: center;
+            font-weight: 500;
+            background-color: #ffffff;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .custom-radio-label.active {
+            background-color: #000000;
+            color: white;
+        }
+
+        .custom-radio {
+            display: none;
+        }
+
+        .song-info {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .song-title {
+            display: block;
+            color: black;
+            font-weight: normal;
+        }
+
+        .song-artist {
+            display: block;
+            color: gray;
+            font-weight: normal;
+        }
+
+        .list-group-item.playing .song-title,
+        .list-group-item.playing .song-artist {
+            font-weight: bold;
+        }
+
+        .icon {
+            display: inline-block;
+            vertical-align: middle;
+            width: 20px;
+            height: 20px;
+            margin-left: -2px;
+            margin-right: 10px;
+            background-size: cover;
+            cursor: pointer;
+        }
+
+        .play-icon {
+            background-image: url("{{ url_for('static', filename='images/play.png') }}");
+        }
+
+        .pause-icon {
+            background-image: url("{{ url_for('static', filename='images/pause.png') }}");
+        }
+
+        .progress-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background-color: #f5f5f5;
+            z-index: 9999;
+            display: none;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #000000;
+            transition: width 0.1s ease-in-out;
+        }
+
+        .send-button {
+            display: none; /* Скрыть кнопку по умолчанию */
+            position: fixed;
+            bottom: 20px; /* Отступ снизу */
+            left: 50%; /* Центрирование по горизонтали */
+            transform: translateX(-50%); /* Сдвигаем кнопку на половину её ширины назад, чтобы центрировать точно */
+            z-index: 1000; /* Убедитесь, что кнопка находится поверх других элементов */
+            padding: 10px 20px; /* Паддинг для кнопки */
+            background-color: #007bff; /* Цвет фона кнопки */
+            color: white; /* Цвет текста кнопки */
+            border: none; /* Убираем границу */
+            border-radius: 5px; /* Скругляем углы */
+            cursor: pointer; /* Изменяем курсор при наведении на кнопку */
+        }
+
+
+        .song-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .list-group-item {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .form-check-input {
+            position: absolute;
+            right: 0;
+            margin-right: 5%;
+            width: 50px; /* Устанавливаем ширину 70px */
+            height: 50px; /* Устанавливаем высоту 70px */
+            cursor: pointer; /* Опционально, делает курсор руки, когда пользователь наводит на чекбокс */
+            top: 50%;
+            transform: translateY(-59%); /* Смещаем элемент на 50% его высоты вверх */;
+            /*           -webkit-appearance: none; !* Убирает стандартный стиль для Webkit-браузеров *!*/
+            /*appearance: none; !* Убирает стандартный стиль для всех браузеров *!*/
+            /*background-color: #f0f0f0; !* Фоновый цвет чекбокса, можно изменить на нужный *!*/
+            /*border: 1px solid #dcdcdc; !* Граница чекбокса, можно изменить на нужный стиль *!*/
+            /*border-radius: 5px; !* Скругление углов, можно изменить в соответствии с дизайном *!*/
+        }
+
+        /* Стили для состояния "checked" */
+        /*.form-check-input:checked {*/
+        /*    background-color: #007bff; !* Цвет фона при выборе *!*/
+        /*    border-color: #007bff; !* Цвет границы при выборе *!*/
+        /*}*/
+    </style>
+</head>
+<body>
+<div class="container">
+    <h3 class="mb-3 text-center">библиотека песен</h3>
+    <ul class="list-group">
+        {% if chart|length != 0 %}
+        {% for song in chart %}
+        <li class="list-group-item">
+            <div class="song-container">
+                <span class="icon play-icon" onclick="togglePlayback(this, '{{ song }}.mp3')"></span>
+                <div class="song-info">
+                    <a href="{{ url_for('get_music', filename=song + '.mp3') }}" download="{{ song }}">
+                        <span class="song-title">{{ song.split(' - ')[1] }}</span>
+                    </a>
+                    <span class="song-artist">{{ song.split(' - ')[0] }}</span>
+                </div>
+            </div>
+            <input type="checkbox" class="form-check-input" onchange="checkSelection()">
+        </li>
+        {% endfor %}
+        {% else %}
+        <ul class="list-group">
+            <li class="list-group-item">
+                <div class="song-info">
+                    <span class="song-artist">пока что нет песен...</span>
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+    </ul>
+    <button class="btn btn-primary send-button" id="send-selected">далее</button>
+</div>
+
+<div class="progress-container" onclick="seek(event)">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div id="squadModal"
+     style="display:none; position:fixed; z-index:1001; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.4);">
+    <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px;">
+        <h4 class="mb-4 text-center">выбор отряда</h4>
+        <div>
+            <input type="radio" id="squad1" name="squad" value="1" class="custom-radio">
+            <label for="squad1" class="custom-radio-label">первый отряд</label>
+        </div>
+        <div>
+            <input type="radio" id="squad2" name="squad" value="2" class="custom-radio">
+            <label for="squad2" class="custom-radio-label">второй отряд</label>
+        </div>
+        <div>
+            <input type="radio" id="squad3" name="squad" value="3" class="custom-radio">
+            <label for="squad3" class="custom-radio-label">третий отряд</label>
+        </div>
+        <div>
+            <input type="radio" id="squad4" name="squad" value="4" class="custom-radio">
+            <label for="squad4" class="custom-radio-label">четвертый отряд</label>
+        </div>
+        <div>
+            <input type="radio" id="squad5" name="squad" value="5" class="custom-radio">
+            <label for="squad5" class="custom-radio-label">педсостав</label>
+        </div>
+        <!-- Добавьте больше радиокнопок для отрядов при необходимости -->
+        <button class="btn btn-primary" onclick="sendSongsWithSquad()">отправить</button>
+        <button class="btn btn-secondary" onclick="closeModal()">отмена</button>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var radios = document.querySelectorAll(".custom-radio");
+        var labels = document.querySelectorAll(".custom-radio-label");
+
+        radios.forEach(function (radio) {
+            radio.addEventListener("change", function () {
+                labels.forEach(function (label) {
+                    label.classList.remove("active");
+                });
+
+                var selectedLabel = document.querySelector("label[for=" + radio.id + "]");
+                selectedLabel.classList.add("active");
+            });
+        });
+    });
+
+    function sendSelectedSongs() {
+        document.getElementById('squadModal').style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById('squadModal').style.display = "none";
+    }
+
+    function checkSelection() {
+        const checkboxes = document.querySelectorAll('.form-check-input');
+        const sendButton = document.getElementById('send-selected');
+        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+        sendButton.style.display = anyChecked ? 'block' : 'none';
+    }
+
+    function sendSongsWithSquad() {
+        const selectedSquadRadio = document.querySelector('input[name="squad"]:checked');
+        if (!selectedSquadRadio) {
+            alert('выбери отряд, чтобы продолжить');
+            return;
+        }
+        const selectedSquad = selectedSquadRadio.value;
+
+        const selectedSongs = [];
+        const checkboxes = document.querySelectorAll('.form-check-input');
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                const songInfo = checkbox.closest('.list-group-item').querySelector('.song-info');
+                const songTitle = songInfo.querySelector('.song-title').textContent.trim();
+                const songArtist = songInfo.querySelector('.song-artist').textContent.trim();
+                selectedSongs.push({title: songTitle, artist: songArtist});
+            }
+        });
+
+        fetch('/send_songs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({songs: selectedSongs, squad: selectedSquad}),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.status)
+                if (data.status) {
+                    alert(data.message || 'success');
+                    window.location.href = '/';
+                } else {
+                    alert(data.message || 'error');
+                    window.location.href = '/';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('произошла ошибка при отправке песен');
+                window.location.href = '/';
+            });
+    }
+
+
+    document.getElementById('send-selected').addEventListener('click', sendSelectedSongs);
+
+    var audio = null;
+    var currentSong = null;
+    var currentButton = null;
+    var progressBar = document.getElementById('progress-bar');
+    var progressContainer = document.querySelector('.progress-container');
+
+    function updateMediaMetadata(songTitle, songArtist) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: songTitle,
+                artist: songArtist,
+                album: '',
+                artwork: []
+            });
+        }
+    }
+
+    function togglePlayback(button, songName) {
+        if (currentSong !== songName) {
+            if (audio) {
+                audio.pause();
+                currentButton.classList.remove("pause-icon");
+                currentButton.classList.add("play-icon");
+                currentButton.parentNode.classList.remove("playing");
+            }
+            audio = new Audio("/music/" + songName);
+            currentSong = songName;
+            currentButton = button;
+            audio.onended = function () {
+                button.classList.remove("pause-icon");
+                button.classList.add("play-icon");
+                progressContainer.style.display = 'none';
+                button.parentNode.classList.remove("playing");
+            };
+            audio.ontimeupdate = function () {
+                var progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = progress + '%';
+            };
+            audio.onpause = function () {
+                button.classList.remove("pause-icon");
+                button.classList.add("play-icon");
+            };
+            audio.onplay = function () {
+                button.classList.remove("play-icon");
+                button.classList.add("pause-icon");
+            };
+        }
+
+        if (audio.paused) {
+            audio.play();
+            button.classList.remove("play-icon");
+            button.classList.add("pause-icon");
+            progressContainer.style.display = 'block';
+            button.parentNode.classList.add("playing");
+            updateMediaMetadata(songName.split(' - ')[1].replace('.mp3', ''), songName.split(' - ')[0]);
+        } else {
+            audio.pause();
+            button.classList.remove("pause-icon");
+            button.classList.add("play-icon");
+        }
+    }
+
+    function seek(event) {
+        var progressBarWidth = progressContainer.clientWidth;
+        var clickX = event.clientX - progressContainer.offsetLeft;
+        var percentage = (clickX / progressBarWidth) * 100;
+        var seekTime = (percentage / 100) * audio.duration;
+        audio.currentTime = seekTime;
+        progressBar.style.width = percentage + '%';
+    }
+
+    var isSeeking = false;
+
+    progressContainer.addEventListener('touchstart', startSeek);
+    progressContainer.addEventListener('touchmove', moveSeek);
+    progressContainer.addEventListener('touchend', endSeek);
+
+    function startSeek(event) {
+        isSeeking = true;
+        moveSeek(event);
+    }
+
+    function moveSeek(event) {
+        if (isSeeking) {
+            var progressBarWidth = progressContainer.clientWidth;
+            var clickX;
+
+            if (event.type === 'touchmove') {
+                clickX = event.touches[0].clientX - progressContainer.offsetLeft;
+            } else {
+                clickX = event.clientX - progressContainer.offsetLeft;
+            }
+
+            var percentage = (clickX / progressBarWidth) * 100;
+            var seekTime = (percentage / 100) * audio.duration;
+
+            if (seekTime >= 0 && seekTime <= audio.duration) {
+                audio.currentTime = seekTime;
+                progressBar.style.width = percentage + '%';
+            }
+        }
+    }
+
+    function endSeek() {
+        isSeeking = false;
+    }
+</script>
+</body>
+</html>
